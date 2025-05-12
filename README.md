@@ -16,7 +16,7 @@ This repository consists of following Python scripts:
 * `ScenarioB.py` This code reproduces Figure 4-6, based on Scenario B as desribed in Section IV.B of the paper. 
 * `ScenarioC.py`This code reproduces Figure 7, based on Scenario C as desribed in Section IV.C of the paper. 
 
-![Figure 2](Figure1.png)
+<img src="Figure1.png" alt="Figure 1" width="60%">
 
 ## Authors
 Esa Ollila, Elias Raninen and Xavier Mestre

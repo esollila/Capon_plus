@@ -9,6 +9,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.linalg import solve
 from utils import weight, steering_vector, create_training_data
+
+from datetime import date
+import tikzplotlib # Requires matplotlib 3.7.0
 #%%
 M = 25     # nr. of sensors in the ULA
 T = 60     # snapshot size
@@ -36,6 +39,8 @@ SP_MSE  = {d : np.zeros((MC_iters,nSNR)) for d in methods}
 Bias    = {d : np.zeros((MC_iters,nSNR)) for d in methods}
 w    = {"Cap": [], "MMSE": [],"Cap+":[]}
 source_dist="8-psk"
+gammahat_deb = np.zeros((MC_iters,nSNR))
+SP_MSE["deb"] = np.zeros((MC_iters,nSNR))
 
 #%% iteration starts
 
@@ -45,28 +50,27 @@ for isnr in range(nSNR):
     print('{:2d} / {} , SNR= {:4.1f}'.format(isnr+1, nSNR, SNR[isnr]))
     rng = np.random.default_rng(12345)    
         
-    #%% Compute Covariance matrix and INCM Q
+    # Compute Covariance matrix and INCM Q
     Cov = A0 @ np.diag(gam_isnr) @ A0.conj().T + np.eye(M)
     iCov = solve(Cov,np.eye(M) ,assume_a='pos') 
     Q = A0[:,1:] @ np.diag(gam_isnr[1:]) @ A0[:,1:].conj().T + np.eye(M)
     iQ  = solve(Q,np.eye(M) ,assume_a='pos') 
     
-    #%% Compute weight of Capon (this is known in this example!)
+    # Compute weight of Capon (this is known in this example!)
     w_base = weight(DOA_src[0],Q)
     beta_Cap =  1/np.real(a1.conj().T @ w_base).item() # multiplier
     w["Cap"] = beta_Cap*w_base # w cap is known and does not depend on data
         
     for it in range(MC_iters):
     
-        #%% Create the data 
+        # Create the data 
         y_soi, y_ipn, s_soi = create_training_data(T, A0, gam_isnr,rng,sources=source_dist)
         y = y_soi + y_ipn    
                 
-        #%%    
+        #    
         s_base = w_base.conj().T @ y
         gam0_base = np.mean(np.abs(s_base)**2)
                 
-        #%%
         # MVDR: 
         gammahat_Cap = gam0_base*beta_Cap**2
         SP_MSE["Cap"][it,isnr]  = (gammahat_Cap - gam_isnr[0])**2
@@ -74,7 +78,11 @@ for isnr in range(nSNR):
         
         # Debiased estimator that we will use as an estimator of gamma
         gammahat = gammahat_Cap - beta_Cap
+        gammahat = np.max([gammahat,0])
 
+        gammahat_deb[it,isnr] = gammahat
+        SP_MSE["deb"][it,isnr]  =  (gammahat - gam_isnr[0])**2
+        
         # MMSE (using the estimated gammahat): 
         beta_MMSE = gammahat/(1+gammahat/beta_Cap)
         gammahat_MMSE =  beta_MMSE**2 * gam0_base
@@ -82,7 +90,7 @@ for isnr in range(nSNR):
         Bias["MMSE"][it,isnr] = (gammahat_MMSE-gam_isnr[0])
         w["MMSE"] = beta_MMSE*w_base
                 
-        #%%  Capon+ for Scenario A (INCM Q known, gamma_SOI is unknown)
+        #  Capon+ for Scenario A (INCM Q known, gamma_SOI is unknown)
         mu4 = np.mean(np.abs(w["Cap"].conj().T @ y)**4)
         den = mu4 + gammahat_Cap**2*(T-1)
         num = T*gammahat_Cap*gammahat
@@ -93,7 +101,7 @@ for isnr in range(nSNR):
         beta_Cap_plus =  np.sqrt(num/den)
         w["Cap+"] = beta_Cap_plus*w["Cap"]
 
-        #%% signal estimation NMSE
+        # signal estimation NMSE
         gam0_emp = np.mean(np.abs(s_soi)**2)
         for ii,d in enumerate(w):
             s_est = w[d].conj().T @ y
@@ -115,6 +123,11 @@ for i,d in enumerate(methods):
         linewidth=lwid, markersize=msize,
         color=colors[i]
         )
+ax[0].plot(
+    SNR, np.mean(gammahat_deb-gams[0],axis=0)/gams[0],
+    'x', label = "deb", 
+    linewidth=lwid, markersize=msize,
+    )
 #ax[0].legend(fontsize=20,ncols=6,loc='upper right')
 ax[0].set_ylabel('Relative bias, $(\hat \gamma - \gamma)/\gamma$',fontsize=18)
 ax[0].set_title("T = {}, {}".format(T,source_dist),fontsize=18)
@@ -127,18 +140,27 @@ for i,d in enumerate(methods):
         linewidth=lwid, markersize=msize,
         color=colors[i]
         )
-ax[1].legend(fontsize=20,ncols=1)
+#ax[1].legend(fontsize=20,ncols=1)
 ax[1].set_ylabel('Signal Estimation NMSE',fontsize=18)
 ax[1].grid()
 
 for i,d in enumerate(methods):
     ax[2].plot(
         SNR,np.mean(SP_MSE[d],axis=0)/gams[0]**2,
-        'o-',linewidth=lwid,label=methods[i],
+        'o-', label=methods[i],
+        linewidth=lwid, markersize=msize, 
         color=colors[i]
-        )
+        )  
+ax[2].plot(
+    SNR, np.mean(SP_MSE["deb"],axis=0)/gams[0]**2,
+    'x-', label = "deb", linewidth=lwid, markersize=msize
+    )
 #ax[2].legend(fontsize=16,ncols=1)
 ax[2].set_xlabel('SNR of SOI, $\gamma/\sigma^2$ [dB]',fontsize=17)
 ax[2].set_ylabel('Signal power NMSE',fontsize=18)
 ax[2].grid()
-plt.show()
+#plt.show()
+
+current_date = date.today()
+fname = f"tikz/ScenarioA_M={M:}_T={T:}_MC={MC_iters:}_SNR={SNR[0]:.1f}_to_{SNR[-1]:.1f}_th1={DOA_src[0]:.2f}_th4={DOA_src[-1]:.2f}_{current_date:}.tex"
+tikzplotlib.save(fname)

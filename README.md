@@ -10,11 +10,12 @@ A preliminary version of this work can be found in:
 If you use the codes, then please cite the references above!
 
 ## Absract
-  We study the properties of beamformers, particularly the Capon (also knon as MPDR or MVDR beamformer) and MMSE beamformers, in their ability to either maintain or estimate the true signal power of the signal of interest (SOI). A curious feature of these beamformers is their tendency to either overestimate or underestimate the signal power. Namely, they are not asymptotically unbiased (as the sample size approaches to infinity). To address this issue, we propose to shrink the Capon beamformer by finding a scaling factor that minimizes the mean squared error (MSE) of the signal power estimate. The new beamformer, referred to as the Capon$^+$ beamformer, is evaluated against the Capon and MMSE beamformers in terms of bias, signal power MSE, and signal waveform MSE. The Capon$^+$ beamformer demonstrates a superior balance in both signal power and waveform estimation while exhibiting minimal bias, which approaches zero as the sample size increases.
+ We study the properties of beamformers in their ability to either maintain or estimate the true signal power of the signal of interest (SOI). Our focus is particularly on the Capon beamformer and the minimum mean squared error (MMSE) beamformer. The Capon beamformer, also known as the minimum power distortionless response (MPDR) or the minimum variance distortionless response (MVDR) beamformer, is a widely used method in array signal processing.  A curious feature of both the Capon and the MMSE beamformers is their tendency to either overestimate or underestimate the signal power. That is, they are not asymptotically unbiased (as the sample size approaches infinity). To address this issue, we propose to shrink the Capon beamformer by finding a scaling factor that minimizes the mean squared error (MSE) of the signal power estimate. The new beamformer, referred to as the Capon$^+$ beamformer, is evaluated against the Capon and MMSE beamformers in terms of bias, signal power MSE, and signal waveform MSE. The Capon$^+$ beamformer strikes a better balance between signal power and waveform estimation while also exhibiting minimal bias, which approaches zero as the sample size increases.
 
 
 ## Overview
 This repository consists of following Python scripts:
+
 * `Figure1.py` code to reproduce Figure 1 of the paper [1]
 * `ScenarioA.py` This code reproduces Figure 3, based on Scenario A as desribed in Section IV.A of the paper [1]. 
 * `ScenarioB.py` This code reproduces Figure 4-6, based on Scenario B as desribed in Section IV.B of the paper [1]. 

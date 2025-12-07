@@ -5,7 +5,7 @@ This repository includes the source code used in our recent paper:
 
 A preliminary version of this work can be found in: 
 
-[2] Esa Ollila, Xavier Mestre and Elias Raninen, ["Approach to beamforming minimizing the signal power estimation error"](https://cmsworkshops.com/EUSIPCO2025/TempDev/view_paper.php?PaperNum=1633), 2025 33rd European Signal Processing Conference (EUSIPCO), Palermo, Italy, Sept. 8-12, 2025, pp. 2382-2386.
+[2] Esa Ollila, Xavier Mestre and Elias Raninen, ["Approach to beamforming minimizing the signal power estimation error"](https://doi.org/10.23919/EUSIPCO63237.2025.11226536), 2025 33rd European Signal Processing Conference (EUSIPCO), Palermo, Italy, Sept. 8-12, 2025, pp. 2382-2386.
 
 If you use the codes, then please cite the references above!
 

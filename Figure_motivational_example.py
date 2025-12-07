@@ -1,10 +1,8 @@
 # Code for the article: 
 #   Esa Ollila, Xavier Mestre and Elias Raninen, "Beamforming design for mini-
 #       mizing the signal power estimation error", Arxiv, 2025. 
-# This code reproduce:
-#   Figure 1: SNR vs Relative Bias/Signal estimation NMSE/power estimation MSE
-#   The set-up assumes that the weight vector of all beamformers are perfectly 
-#   known
+# This code reproduces figure in the motivational example (cf. Section III.B) of the paper. 
+# The set-up assumes that the weight vector of all beamformers are perfectly known
 #%%
 
 import numpy as np

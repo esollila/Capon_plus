@@ -16,11 +16,12 @@ If you use the codes, then please cite the references above!
 ## Overview
 This repository consists of following Python scripts:
 
-* `Figure1.py` code to reproduce Figure 1 of the paper [1]
-* `ScenarioA.py` This code reproduces Figure 3, based on Scenario A as desribed in Section IV.A of the paper [1]. 
-* `ScenarioB.py` This code reproduces Figure 4-6, based on Scenario B as desribed in Section IV.B of the paper [1]. 
-* `ScenarioC.py`This code reproduces Figure 7, based on Scenario C as desribed in Section IV.C of the paper [1]. 
-* `ScenarioD.py`This code reproduces Figure 8, based on Scenario D as desribed in Section IV.D of the paper [1]. 
+* `Figure_bias_study.ipynb` code to reproduce figure (bias study of Capon's beamformer)
+* `Figure_motivational_example.py` code to reproduce Figure in the paper [1] (section III.B: A motivational example).
+* `ScenarioA.py` This code reproduces figure based on Scenario A as desribed in Section IV.A of the paper [1]. 
+* `ScenarioB.py` This code reproduces Figures base on Scenario B as desribed in Section IV.B of the paper [1]. 
+* `ScenarioC.py`This code reproduces Figure based on Scenario C as desribed in Section IV.C of the paper [1]. 
+* `ScenarioD.py`This code reproduces Figure based on Scenario D as desribed in Section IV.D of the paper [1]. 
 
 
 <img src="Figure1.png" alt="Figure 1" width="60%">

@@ -1,8 +1,7 @@
 # Scenario A (INCM Q is known, gamma is unknown) 
 # ----------------------------------------------
 # See Section IV.A of Ollila, Mestre and Raninen (2025)
-# This code reproduces 
-# Figure 3: SNR vs Relative Bias/Signal estimation NMSE/power estimation MSE
+# This code reproduces Figure corresponding the Scenario A in the paper. 
 #%%
 
 import numpy as np
@@ -10,15 +9,9 @@ import matplotlib.pyplot as plt
 from scipy.linalg import solve
 from utils import weight, steering_vector, create_training_data
 
-from datetime import date
-import tikzplotlib # Requires matplotlib 3.7.0
 #%%
 M = 25     # nr. of sensors in the ULA
 T = 60     # snapshot size
-DOA_src = np.array([-45.02, -30.02, -20.02,-3])
-K = len(DOA_src)
-A0 = steering_vector(DOA_src,M) # steering matrix
-a1 = A0[:,0].reshape(-1,1) # steering vector of SOI
 
 #%% Compute source powers 
 SNR = np.arange(0,-10.5,-0.5)
@@ -30,7 +23,7 @@ gams = np.vstack([gam1, gam2, gam3, gam4])
 
 #%% Set-up
 rng = np.random.default_rng(11111)
-MC_iters = 10000
+MC_iters = 20000
 methods = ["Cap","MMSE","Cap+"]
 n_methods = len(methods)
 nSNR = len(SNR)
@@ -45,25 +38,48 @@ SP_MSE["deb"] = np.zeros((MC_iters,nSNR))
 #%% iteration starts
 
 for isnr in range(nSNR):
-    
-    gam_isnr = gams[:,isnr]
-    print('{:2d} / {} , SNR= {:4.1f}'.format(isnr+1, nSNR, SNR[isnr]))
-    rng = np.random.default_rng(12345)    
-        
-    # Compute Covariance matrix and INCM Q
-    Cov = A0 @ np.diag(gam_isnr) @ A0.conj().T + np.eye(M)
-    iCov = solve(Cov,np.eye(M) ,assume_a='pos') 
-    Q = A0[:,1:] @ np.diag(gam_isnr[1:]) @ A0[:,1:].conj().T + np.eye(M)
-    iQ  = solve(Q,np.eye(M) ,assume_a='pos') 
-    
-    # Compute weight of Capon (this is known in this example!)
-    w_base = weight(DOA_src[0],Q)
-    beta_Cap =  1/np.real(a1.conj().T @ w_base).item() # multiplier
-    w["Cap"] = beta_Cap*w_base # w cap is known and does not depend on data
-        
+    gam_isnr = gams[:, isnr]
+    # rng = np.random.default_rng(12345)
+    print('{:2d} / {} , SNR= {:4.1f}'.format(isnr + 1, nSNR, SNR[isnr]))
+
     for it in range(MC_iters):
-    
-        # Create the data 
+
+        # SOI DOA
+        DOA_src = np.array([-45])
+
+        # Interferences uniformly random in [-90, DOA-phi] V [DOA+phi, 90]
+        phi = 3
+        interval = np.array([-90,90-2*phi])
+        random_angles = np.random.uniform(low=interval[0], high=interval[1], size=[3,])
+        for val in random_angles:
+            if val < DOA_src[0]-phi:
+                interf_angle = val
+                # append interferences to DOA_src
+                DOA_src = np.concatenate((DOA_src, np.array([interf_angle])), axis=0)
+            else:
+                interf_angle = val + 2*phi
+                # append interferences to DOA_src
+                DOA_src = np.concatenate((DOA_src, np.array([interf_angle])), axis=0)
+
+        K = len(DOA_src)
+        A0 = steering_vector(DOA_src, M)  # steering matrix
+
+        # Compute Covariance matrix and INCM Q
+        Cov = A0 @ np.diag(gam_isnr) @ A0.conj().T + np.eye(M)
+        iCov = solve(Cov,np.eye(M) ,assume_a='pos')
+        Q = A0[:,1:] @ np.diag(gam_isnr[1:]) @ A0[:,1:].conj().T + np.eye(M)
+        iQ  = solve(Q,np.eye(M) ,assume_a='pos')
+
+        # Steering vector for SOI is known
+        DOA_SOI = DOA_src[0]
+        a1 = steering_vector(DOA_SOI, M)
+
+        # Compute weight of Capon
+        w_base = weight(DOA_SOI,Q)
+        beta_Cap =  1/np.real(a1.conj().T @ w_base).item() # multiplier
+        w["Cap"] = beta_Cap*w_base # w cap is known and does not depend on data
+        
+        # Create the data
         y_soi, y_ipn, s_soi = create_training_data(T, A0, gam_isnr,rng,sources=source_dist)
         y = y_soi + y_ipn    
                 
@@ -155,12 +171,11 @@ ax[2].plot(
     SNR, np.mean(SP_MSE["deb"],axis=0)/gams[0]**2,
     'x-', label = "deb", linewidth=lwid, markersize=msize
     )
-#ax[2].legend(fontsize=16,ncols=1)
+ax[2].legend(fontsize=16,ncols=1)
 ax[2].set_xlabel('SNR of SOI, $\gamma/\sigma^2$ [dB]',fontsize=17)
 ax[2].set_ylabel('Signal power NMSE',fontsize=18)
 ax[2].grid()
-#plt.show()
+plt.show()
 
-current_date = date.today()
-fname = f"tikz/ScenarioA_M={M:}_T={T:}_MC={MC_iters:}_SNR={SNR[0]:.1f}_to_{SNR[-1]:.1f}_th1={DOA_src[0]:.2f}_th4={DOA_src[-1]:.2f}_{current_date:}.tex"
-tikzplotlib.save(fname)
+
+# %%
